@@ -57,7 +57,10 @@ export default {
       ipcRenderer.send('dialog:file:open')
     },
     parseData() {
-      this.$router.push({ name: 'ParseProcess' })
+      if (this.form.path.length === 0) {
+        return
+      }
+      this.$router.push({ name: 'ParseProcess', query: this.form })
     },
     reset() {
       this.form = { path: '' }

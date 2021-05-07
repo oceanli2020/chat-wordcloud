@@ -2,6 +2,7 @@
   <div>
     <TitleBar />
     <el-menu
+      ref="menu"
       mode="horizontal"
       :default-active="activeIndex"
       @select="handleSelect"
@@ -21,6 +22,8 @@
 
 <script>
 import TitleBar from '../components/TitleBar'
+import { createNamespacedHelpers } from 'vuex'
+const { mapState } = createNamespacedHelpers('parse')
 export default {
   name: 'DashBoard',
   components: {
@@ -32,10 +35,32 @@ export default {
       activeIndex: '1',
       menuItemList: ['文件解析', '数据展示', '词云'],
       menuRouterMap: {
-        0: '/parseData',
-        1: '/showData',
-        2: '/wordCloud'
+        '0': '/parseData',
+        '1': '/showData',
+        '2': '/wordCloud'
+      },
+      routerMenuMap: {
+        '/parseData': '0',
+        '/showData': '1',
+        '/wordCloud': '2'
       }
+    }
+  },
+  computed: {
+    ...mapState({
+      isParsing: (state) => state.isParsing
+    })
+  },
+  watch: {
+    isParsing: function(newVal, oldVal) {
+      this.menuDisabled = newVal
+    },
+    $route: {
+      handler: function(newVal, oldVal) {
+        this.$refs.menu.activeIndex = this.routerMenuMap[newVal.path]
+      },
+      // 深度观察监听
+      deep: true
     }
   },
   methods: {

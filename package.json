@@ -14,7 +14,8 @@
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
-    "postinstall": ""
+    "postinstall": "",
+    "rebuild": "electron-rebuild -f -w better-sqlite3"
   },
   "build": {
     "productName": "chat-wordcloud",
@@ -57,7 +58,8 @@
     "vue-electron": "^1.0.6",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",
-    "vuex-electron": "^1.0.0"
+    "vuex-electron": "^1.0.0",
+    "better-sqlite3": "7.1.0-sqlcipher"
   },
   "devDependencies": {
     "ajv": "^6.5.0",

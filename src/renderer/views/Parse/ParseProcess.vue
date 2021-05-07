@@ -13,20 +13,39 @@
         <span>{{ message }}</span>
       </div>
     </div>
+    <el-dialog
+      title="提示"
+      :visible.sync="dialogVisible"
+      width="400px"
+      top="30vh"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <span>备份文件解析完成</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="$router.push('/parseData')">继续解析其他备份文件</el-button>
+        <el-button type="primary" @click="$router.push('/showData')"
+          >查看数据</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { ipcRenderer } from 'electron'
+import { createNamespacedHelpers } from 'vuex'
+const { mapActions } = createNamespacedHelpers('parse')
 export default {
   name: 'ParseProcess',
   data() {
     return {
       params: {
-        path: '',
+        path: ''
       },
       percentage: 0,
-      message: ''
+      message: '',
+      dialogVisible: false
     }
   },
   mounted() {
@@ -37,25 +56,30 @@ export default {
   },
   methods: {
     init() {
+      this.setIsParsing(true)
       this.params = this.$route.query
-      ipcRenderer.once('parse:data:reply', (event, result) => {
-        console.log(result)
-      })
+      ipcRenderer.once('parse:data:reply', (event, result) => {})
       ipcRenderer.send('parse:data', this.params)
       ipcRenderer.on('parse:progress', (event, result) => {
         this.percentage = result.percentage
         this.message = result.message
+        if (this.percentage === 100) {
+          this.setIsParsing(false)
+          this.dialogVisible = true
+        }
       })
-    }
+    },
+    ...mapActions(['setIsParsing'])
   }
 }
 </script>
 <style scoped>
-.parse-process {
-  text-align: center;
-}
 .parse-process-block {
-  margin-top: 150px;
+  height: calc(100vh - 250px);
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
 }
 .title {
   color: #1890ff;

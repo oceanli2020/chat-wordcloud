@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import events from './events'
+import DB from './utils/database'
 import '../renderer/store'
 
 /**
@@ -19,6 +20,9 @@ const winURL =
     : `file://${__dirname}/index.html`
 
 function createWindow() {
+
+  DB.getInstance()
+
   /**
    * Initial window options
    */

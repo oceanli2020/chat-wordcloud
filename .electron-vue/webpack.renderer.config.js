@@ -12,6 +12,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { VueLoaderPlugin } = require('vue-loader')
 
+function resolve(dir) {
+  return path.join(__dirname, '..', dir)
+}
+
 /**
  * List of node_modules to include in webpack bundle
  *
@@ -67,7 +71,16 @@ let rendererConfig = {
         }
       },
       {
+        test: /\.svg$/,
+        loader: 'svg-sprite-loader',
+        include: [resolve('src/renderer/icons')],
+        options: {
+          symbolId: 'icon-[name]'
+        }
+      },
+      {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+        exclude: [resolve('src/renderer/icons')],
         use: {
           loader: 'url-loader',
           query: {
@@ -127,6 +140,7 @@ let rendererConfig = {
         ? path.resolve(__dirname, '../node_modules')
         : false
     }),
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin()
   ],
   output: {
@@ -149,7 +163,6 @@ let rendererConfig = {
  */
 if (process.env.NODE_ENV !== 'production') {
   rendererConfig.plugins.push(
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
     })
