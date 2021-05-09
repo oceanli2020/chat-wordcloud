@@ -9,6 +9,7 @@ import mkdirp from 'mkdirp'
 import cpFile from 'cp-file'
 import md5 from 'md5'
 import fs from 'fs'
+import { extract } from '../storage'
 
 export default class WeChatBase {
   constructor() {
@@ -83,7 +84,8 @@ export default class WeChatBase {
   }
 
   saveUser(result) {
-    var user = {
+    const user = {
+      extractId: extract.id,
       nickname: '',
       name: '',
       alias: '',
@@ -336,6 +338,7 @@ export default class WeChatBase {
   }
 
   migratePromise(dbFile, rkeyArr) {
+    console.log(rkeyArr)
     for (const key of rkeyArr) {
       const db = new Database(dbFile)
       try {

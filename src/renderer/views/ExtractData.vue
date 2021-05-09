@@ -5,7 +5,7 @@
 </template>
 <script>
 export default {
-  name: 'ParseData',
+  name: 'ExtractData',
   data() {
     return {}
   }

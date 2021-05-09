@@ -90,5 +90,7 @@ CREATE TABLE "weChatUser" (
 
 "phone" TEXT,
 
-"avatar" TEXT
+"avatar" TEXT,
+
+"extractId" INTEGER
 );

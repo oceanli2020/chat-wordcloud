@@ -1,13 +1,15 @@
 let mainWin
-const EventReply = async (mainWindow) => {
-  mainWin = mainWindow 
+const EventReply = (mainWindow) => {
+  mainWin = mainWindow
 }
-
+export function sendStart(message, percentage) {
+  mainWin.webContents.send('extract:progress', { message, percentage })
+}
 export function sendProcess(message, percentage) {
-  mainWin.webContents.send('parse:progress', { message, percentage })
+  mainWin.webContents.send('extract:progress', { message, percentage })
 }
 export function sendEnd(status, message, percentage) {
-  mainWin.webContents.send('parse:progress', { status, message, percentage })
+  mainWin.webContents.send('extract:progress', { status, message, percentage })
 }
 
 export default EventReply

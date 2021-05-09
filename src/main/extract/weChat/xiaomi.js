@@ -11,8 +11,9 @@ import { sendProcess, sendEnd } from '../../events/evenReply'
 import { decodeBackupFile } from '../../utils/xiaomi/decode'
 
 export default class WeChatXiaomi extends WeChatBase {
-  async execParse(file) {
+  async execExtract(file) {
     sendProcess('解压中...', 50)
+    // await sleep(2000)
     const baseFolder = path.dirname(file)
     const basename = path.basename(file, path.extname(file))
     const destFolder = getUniquePath(path.join(baseFolder, 'weChat'))
@@ -25,6 +26,7 @@ export default class WeChatXiaomi extends WeChatBase {
     })
     this._storagePath = destFolder
     sendProcess('解析中...', 75)
+    // await sleep(2000)
     const data = await fs.promises.readFile(
       path.join(
         this._storagePath,

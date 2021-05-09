@@ -31,10 +31,10 @@ export default new Router({
       redirect: '/showData',
       children: [
         {
-          path: '/parseData',
-          name: 'ParseData',
-          component: () => import('../views/ParseData.vue'),
-          children: modules['parse']
+          path: '/extractData',
+          name: 'ExtractData',
+          component: () => import('../views/ExtractData.vue'),
+          children: modules['extract']
         },
         {
           path: '/showData',

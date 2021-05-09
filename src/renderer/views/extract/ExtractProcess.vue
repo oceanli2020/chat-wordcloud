@@ -1,6 +1,6 @@
 <template>
-  <div class="parse-process">
-    <div class="parse-process-block">
+  <div class="extract-process">
+    <div class="extract-process-block">
       <div>
         <el-progress
           type="circle"
@@ -23,7 +23,9 @@
     >
       <span>备份文件解析完成</span>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="$router.push('/parseData')">继续解析其他备份文件</el-button>
+        <el-button @click="$router.push('/extractData')"
+          >继续解析其他备份文件</el-button
+        >
         <el-button type="primary" @click="$router.push('/showData')"
           >查看数据</el-button
         >
@@ -35,14 +37,12 @@
 <script>
 import { ipcRenderer } from 'electron'
 import { createNamespacedHelpers } from 'vuex'
-const { mapActions } = createNamespacedHelpers('parse')
+const { mapActions } = createNamespacedHelpers('extract')
 export default {
-  name: 'ParseProcess',
+  name: 'ExtractProcess',
   data() {
     return {
-      params: {
-        path: ''
-      },
+      params: {},
       percentage: 0,
       message: '',
       dialogVisible: false
@@ -52,29 +52,28 @@ export default {
     this.init()
   },
   destroyed() {
-    ipcRenderer.removeAllListeners('parse:progress')
+    ipcRenderer.removeAllListeners('extract:progress')
   },
   methods: {
     init() {
-      this.setIsParsing(true)
+      this.setIsExtracting(true)
       this.params = this.$route.query
-      ipcRenderer.once('parse:data:reply', (event, result) => {})
-      ipcRenderer.send('parse:data', this.params)
-      ipcRenderer.on('parse:progress', (event, result) => {
+      ipcRenderer.send('extract:data', this.params)
+      ipcRenderer.on('extract:progress', (event, result) => {
         this.percentage = result.percentage
         this.message = result.message
         if (this.percentage === 100) {
-          this.setIsParsing(false)
+          this.setIsExtracting(false)
           this.dialogVisible = true
         }
       })
     },
-    ...mapActions(['setIsParsing'])
+    ...mapActions(['setIsExtracting'])
   }
 }
 </script>
 <style scoped>
-.parse-process-block {
+.extract-process-block {
   height: calc(100vh - 250px);
   display: flex;
   flex-flow: column;

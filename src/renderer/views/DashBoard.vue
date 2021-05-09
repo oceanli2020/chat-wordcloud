@@ -23,7 +23,7 @@
 <script>
 import TitleBar from '../components/TitleBar'
 import { createNamespacedHelpers } from 'vuex'
-const { mapState } = createNamespacedHelpers('parse')
+const { mapState } = createNamespacedHelpers('extract')
 export default {
   name: 'DashBoard',
   components: {
@@ -33,14 +33,14 @@ export default {
     return {
       menuDisabled: false,
       activeIndex: '1',
-      menuItemList: ['文件解析', '数据展示', '词云'],
+      menuItemList: ['数据提取', '数据展示', '词云'],
       menuRouterMap: {
-        '0': '/parseData',
+        '0': '/extractData',
         '1': '/showData',
         '2': '/wordCloud'
       },
       routerMenuMap: {
-        '/parseData': '0',
+        '/extractData': '0',
         '/showData': '1',
         '/wordCloud': '2'
       }
@@ -48,11 +48,11 @@ export default {
   },
   computed: {
     ...mapState({
-      isParsing: (state) => state.isParsing
+      isExtracting: (state) => state.isExtracting
     })
   },
   watch: {
-    isParsing: function(newVal, oldVal) {
+    isExtracting: function(newVal, oldVal) {
       this.menuDisabled = newVal
     },
     $route: {

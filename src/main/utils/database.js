@@ -16,7 +16,7 @@ export default class DB {
   static createDb() {
     const dbPath = path.resolve(
       app.getPath('userData'),
-      './data/demo/Database.db'
+      './data/chat-wordcloud/Database.db'
     )
     const isDbExist = fs.existsSync(dbPath)
 
@@ -27,7 +27,8 @@ export default class DB {
     const dataBase = new Database(dbPath)
 
     if (!isDbExist) {
-      dataBase.exec(fs.readFileSync(__static + '/weChat.sql', 'utf8'))
+      dataBase.exec(fs.readFileSync(__static + '/V1_extract.sql', 'utf8'))
+      dataBase.exec(fs.readFileSync(__static + '/V2_weChat.sql', 'utf8'))
     }
 
     dataBase.pragma('journal_mode = WAL')
