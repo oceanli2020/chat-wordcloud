@@ -3,19 +3,26 @@ import path from 'path'
 import moment from 'moment'
 import { app } from 'electron'
 
-export function getUniquePath(file) {
-  let count = 1
-  const baseFolder = path.dirname(file)
-  const basename = path.basename(file, path.extname(file))
-  while (fs.existsSync(file)) {
-    file = path.join(
-      baseFolder,
-      basename + ' (' + count + ')',
-      path.extname(file)
-    )
-    count++
+export async function computeFileName(file) {
+  const ext = path.extname(file)
+  const baseFilePath = file.replace(ext, '')
+  let filePath
+  let index = 0
+
+  while (true) {
+    if (index === 0) {
+      filePath = baseFilePath + ext
+    } else {
+      filePath = baseFilePath + `(${index})` + ext
+    }
+    index++
+    try {
+      await fs.promises.access(filePath, fs.constants.F_OK)
+    } catch (error) {
+      break
+    }
   }
-  return file
+  return filePath
 }
 
 export function formatTime(time, str) {
@@ -42,4 +49,26 @@ export function getExecPath() {
 
 function getUsableInstance(arg, argName) {
   return process.type === 'renderer' ? remote[argName] : arg
+}
+
+export function transfer(transfer, destPath) {
+  return new Promise((resolve, reject) => {
+    const stream = fs.createWriteStream(destPath)
+    let count = 0
+    stream.on('finish', () => {
+      count++
+      if (count === 2) {
+        resolve(null)
+      }
+    })
+    stream.on('error', reject)
+    transfer.on('end', () => {
+      count++
+      if (count === 2) {
+        resolve(null)
+      }
+    })
+    transfer.on('error', reject)
+    transfer.pipe(stream)
+  })
 }

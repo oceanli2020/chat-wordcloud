@@ -2,6 +2,8 @@ import { app, BrowserWindow } from 'electron'
 import events from './events'
 import DB from './utils/database'
 import '../renderer/store'
+import mkdirp from 'mkdirp'
+import path from 'path'
 
 /**
  * Set `__static` path to static files in production
@@ -12,6 +14,9 @@ if (process.env.NODE_ENV !== 'development') {
     .join(__dirname, '/static')
     .replace(/\\/g, '\\\\')
 }
+
+mkdirp(path.resolve(app.getPath('documents'), app.name))
+
 
 let mainWindow
 const winURL =

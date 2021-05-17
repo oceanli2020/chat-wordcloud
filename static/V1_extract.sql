@@ -4,7 +4,9 @@ CREATE TABLE "extract" (
 
 "name" TEXT,
 
-"deviceModel" TEXT,
+"apps" TEXT,
+
+'path' TEXT,
 
 "createTime" INTEGER
 

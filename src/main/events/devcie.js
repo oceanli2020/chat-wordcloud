@@ -52,6 +52,9 @@ function getDevice(properties) {
     product: properties['ro.build.product'],
     os: properties['ro.build.version.release'],
     imei: properties['ro.ril.oem.imei'],
+    imei1: properties['ro.ril.oem.imei1'],
+    imei2: properties['ro.ril.oem.imei2'],
+    meid: properties['ro.ril.oem.meid'],
     imsi: properties['ril.slot0_imsi'],
     timezone: properties['persist.sys.timezone']
   }

@@ -9,16 +9,15 @@ import mkdirp from 'mkdirp'
 import cpFile from 'cp-file'
 import md5 from 'md5'
 import fs from 'fs'
-import { extract } from '../storage'
+import { extract as extractStorage } from '../../utils/storage'
 
 export default class WeChatBase {
   constructor() {
     this._enDB = null
     this._filePath = null
-    this._storagePath = null
   }
   async execExtract() {
-    await mkdirp(path.join(this._storagePath, 'weChat'))
+    await mkdirp(path.join(extractStorage.path, 'weChat'))
     await this.saveAvatar()
     await this.saveImage()
     const userInfoResult = this._enDB.prepare('select * from userinfo').all()
@@ -55,15 +54,15 @@ export default class WeChatBase {
     6: 'phone'
   }
   async saveAvatar() {
-    await mkdirp(path.join(this._storagePath, 'weChat', 'avatar'))
+    await mkdirp(path.join(extractStorage.path, 'weChat', 'avatar'))
     let srcPath = path.join(this._filePath, 'avatar')
-    let tarPath = path.join(this._storagePath, 'weChat', 'avatar')
+    let tarPath = path.join(extractStorage.path, 'weChat', 'avatar')
     await this.copyFolder(srcPath, tarPath)
   }
   async saveImage() {
-    await mkdirp(path.join(this._storagePath, 'weChat', 'image'))
+    await mkdirp(path.join(extractStorage.path, 'weChat', 'image'))
     let srcPath = path.join(this._filePath, 'image2')
-    let tarPath = path.join(this._storagePath, 'weChat', 'image')
+    let tarPath = path.join(extractStorage.path, 'weChat', 'image')
     if (fs.existsSync(srcPath)) {
       await this.copyFolder(srcPath, tarPath)
     }
@@ -85,7 +84,7 @@ export default class WeChatBase {
 
   saveUser(result) {
     const user = {
-      extractId: extract.id,
+      extractId: extractStorage.id,
       nickname: '',
       name: '',
       alias: '',
@@ -103,7 +102,7 @@ export default class WeChatBase {
     })
     const md5Name = md5(user.name)
     let avatar = path.join(
-      this._storagePath,
+      extractStorage.path,
       'weChat',
       'avatar',
       md5Name.substr(0, 2),
@@ -169,7 +168,7 @@ export default class WeChatBase {
       }
       const md5Name = md5(contacts.username)
       let avatar = path.join(
-        this._storagePath,
+        extractStorage.path,
         'weChat',
         'avatar',
         md5Name.substr(0, 2),
@@ -225,7 +224,7 @@ export default class WeChatBase {
       })
       const md5Name = md5(chatroom.name)
       let avatar = path.join(
-        this._storagePath,
+        extractStorage.path,
         'weChat',
         'avatar',
         md5Name.substr(0, 2),
@@ -257,7 +256,7 @@ export default class WeChatBase {
         ) {
           let code = message.imgPath.replace('THUMBNAIL_DIRPATH://th_', '')
           message.imgPath = path.join(
-            this._storagePath,
+            extractStorage.path,
             'weChat',
             'image',
             code.substr(0, 2),
@@ -305,29 +304,37 @@ export default class WeChatBase {
     })
   }
 
-  async computeUin(keyData) {
+  async computeUins(keyData) {
     const parser = new Parser()
     const xml = await parser.parseStringPromise(keyData)
-    const intList = xml['map']['int']
-    const authUin = intList.filter((item) => item['$']['name'] === '_auth_uin')
-    const uin = authUin[0]['$']['value']
-    return uin
+    const setList = xml['map']['set']
+    let uinSet = null
+    for (const set of setList) {
+      if (set['$']['name'] === 'uin_set') {
+        uinSet = set
+      }
+    }
+    return uinSet['string']
   }
+
   async computePassword(dbFile, uin) {
     const keyArr = [`1234567890ABCDEF${uin}`]
-    const imei = ['863254039954523', '863254039954531']
-    const meid = '99000939498726'
-    if (imei) {
-      if (imei instanceof Array && imei.length > 0) {
-        for (const subImei of imei) {
+    if (extractStorage.imei) {
+      if (
+        extractStorage.imei instanceof Array &&
+        extractStorage.imei.length > 0
+      ) {
+        for (const subImei of extractStorage.imei) {
           keyArr.push(`${subImei}${uin}`)
         }
       } else {
-        keyArr.push(`${imei}${uin}`)
+        keyArr.push(`${extractStorage.imei}${uin}`)
       }
     }
-    keyArr.push(`${meid}${uin}`)
+    extractStorage.meid && keyArr.push(`${extractStorage.meid}${uin}`)
+
     const rkeyArr = keyArr.map((item) => md5(item).substr(0, 7))
+
     let realKey = ''
     try {
       realKey = this.migratePromise(dbFile, rkeyArr)
@@ -338,7 +345,6 @@ export default class WeChatBase {
   }
 
   migratePromise(dbFile, rkeyArr) {
-    console.log(rkeyArr)
     for (const key of rkeyArr) {
       const db = new Database(dbFile)
       try {
@@ -353,5 +359,6 @@ export default class WeChatBase {
       db.close()
       return key
     }
+    throw Error('no key')
   }
 }

@@ -2,17 +2,19 @@
   <div class="parse-prepare">
     <div class="form-block">
       <el-form ref="form" :model="form" label-width="80px" size="small">
-        <el-form-item label="应用"
-          ><el-radio v-model="form.app" label="weChat">微信</el-radio>
-          <el-radio v-model="form.app" label="qq">QQ</el-radio></el-form-item
-        >
+        <el-form-item label="应用">
+          <el-checkbox-group v-model="form.apps">
+            <el-checkbox label="weChat">微信</el-checkbox>
+            <el-checkbox label="qq">QQ</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
         <el-form-item label="设备"
           ><el-select v-model="form.device" placeholder="请选择设备">
             <el-option
-              v-for="(item, index) in deviceList"
-              :key="index"
+              v-for="item in deviceList"
+              :key="item.serial"
               :label="item.manufacturer + ' ' + item.model"
-              :value="item"
+              :value="item.serial"
             >
             </el-option> </el-select
         ></el-form-item>
@@ -34,9 +36,8 @@ export default {
   data() {
     return {
       deviceList: [],
-      appList: [{ name: '微信', vlaue: 'weChat' }],
       form: {
-        app: 'weChat',
+        apps: ['weChat'],
         device: ''
       }
     }
@@ -46,6 +47,7 @@ export default {
   },
   destroyed() {
     ipcRenderer.removeAllListeners('device:change')
+    ipcRenderer.removeAllListeners('device:list')
   },
   methods: {
     init() {
@@ -56,8 +58,7 @@ export default {
       })
     },
     getDeviceList() {
-      ipcRenderer.once('device:list:reply', (event, result) => {
-        console.log(result)
+      ipcRenderer.on('device:list:reply', (event, result) => {
         this.deviceList = result
         if (this.deviceList.length === 0) {
           this.form.device = ''
@@ -68,7 +69,12 @@ export default {
       ipcRenderer.send('device:list')
     },
     extractData() {
-      if (this.form.device) {
+      if (this.form.apps.length > 0 && this.form.device) {
+        this.deviceList.forEach((device) => {
+          if (device.serial === this.form.device) {
+            this.form.device = device
+          }
+        })
         this.$router.push({ name: 'ExtractProcess', query: this.form })
       }
     }

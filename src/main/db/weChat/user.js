@@ -9,8 +9,3 @@ export function save(user) {
     .prepare(sql)
     .run(user)
 }
-
-export function list(user) {
-  const sql = 'select * from weChatUser'
-  return DB.getInstance().prepare(sql).all(user)
-}

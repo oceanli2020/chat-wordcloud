@@ -1,61 +1,68 @@
 import Database from 'better-sqlite3'
 import WeChatBase from './base'
 import path from 'path'
-import tar from 'tar'
 import fs from 'fs'
 import md5 from 'md5'
-import mkdirp from 'mkdirp'
-import { sleep } from '../../utils/sleep'
-import { getUniquePath } from '../../utils/format'
+import { decodeBackupXiaomi } from '../../utils/decode'
+import { extract as extractStorage } from '../../utils/storage'
+
 import { sendProcess, sendEnd } from '../../events/evenReply'
-import { decodeBackupFile } from '../../utils/xiaomi/decode'
 
 export default class WeChatXiaomi extends WeChatBase {
-  async execExtract(file) {
+  async execExtract() {
     sendProcess('解压中...', 50)
-    // await sleep(2000)
-    const baseFolder = path.dirname(file)
-    const basename = path.basename(file, path.extname(file))
-    const destFolder = getUniquePath(path.join(baseFolder, 'weChat'))
-    await mkdirp(destFolder)
-    const destTarPath = path.join(destFolder, `${basename}.tar`)
-    await decodeBackupFile(file, destTarPath)
-    await tar.extract({
-      cwd: destFolder,
-      file: destTarPath
-    })
-    this._storagePath = destFolder
+    const storagePath = await decodeBackupXiaomi(
+      extractStorage.serial,
+      path.join(extractStorage.path, '.temp')
+    )
     sendProcess('解析中...', 75)
-    // await sleep(2000)
     const data = await fs.promises.readFile(
-      path.join(
-        this._storagePath,
-        '/apps/com.tencent.mm/sp/auth_info_key_prefs.xml'
+      path.join(storagePath, 'apps/com.tencent.mm/sp/app_brand_global_sp.xml')
+    )
+
+    let noKeyCount = 0
+
+    const uins = await this.computeUins(data)
+    for (const uin of uins) {
+      const folderName = md5(`mm${uin}`)
+      const enDbFile = path.join(
+        storagePath,
+        `apps/com.tencent.mm/r/MicroMsg/${folderName}/EnMicroMsg.db`
       )
-    )
-    const uin = await this.computeUin(data)
-    const folderName = md5(`mm${uin}`)
-    const enDbFile = path.join(
-      this._storagePath,
-      `/apps/com.tencent.mm/r/MicroMsg/${folderName}/EnMicroMsg.db`
-    )
-    let realKey = ''
-    try {
-      realKey = await this.computePassword(enDbFile, uin)
-    } catch (error) {
-      console.warn(error)
-      console.log('error')
-      return
+      const snsDbFile = path.join(
+        storagePath,
+        `apps/com.tencent.mm/r/MicroMsg/${folderName}/SnsMicroMsg.db`
+      )
+
+      let realKey = ''
+
+      try {
+        realKey = await this.computePassword(enDbFile, uin)
+      } catch (error) {
+        console.log('no key.', error)
+        noKeyCount++
+        continue
+      }
+
+      console.log(`key is ${realKey}`)
+
+      const enDataBase = new Database(enDbFile)
+      enDataBase.pragma(`key = "${realKey}"`)
+      this._enDB = enDataBase
+      this._snsDB = new Database(snsDbFile)
+      this._filePath = path.join(
+        storagePath,
+        `apps/com.tencent.mm/r/MicroMsg/${folderName}`
+      )
+      await super.execExtract()
+      this._enDB.close()
+      this._snsDB.close()
     }
-    console.log(realKey)
-    this._enDB = new Database(enDbFile)
-    this._enDB.pragma(`key = "${realKey}"`)
-    this._filePath = path.join(
-      this._storagePath,
-      `/apps/com.tencent.mm/r/MicroMsg/${folderName}`
-    )
-    await super.execExtract()
-    this._enDB.close()
+
+    if (uins.length === noKeyCount) {
+      sendEnd('fail', '未获取到账号密钥', 90)
+    }
+
     sendEnd('success', '已完成', 100)
   }
 }
