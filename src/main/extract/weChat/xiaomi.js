@@ -11,9 +11,13 @@ import { sendProcess, sendEnd } from '../../events/evenReply'
 export default class WeChatXiaomi extends WeChatBase {
   async execExtract() {
     sendProcess('解压中...', 50)
-    const storagePath = await decodeBackupXiaomi(
-      extractStorage.serial,
-      path.join(extractStorage.path, '.temp')
+    // const storagePath = await decodeBackupXiaomi(
+    //   extractStorage.serial,
+    //   path.join(extractStorage.path, '.temp')
+    // )
+    const storagePath = path.join(
+      'F:/extract-test/Xiaomi MI 6 2021-05-14',
+      '.temp'
     )
     sendProcess('解析中...', 75)
     const data = await fs.promises.readFile(

@@ -1,7 +1,7 @@
 <template>
   <div class="parse-prepare">
     <div class="form-block">
-      <el-form ref="form" :model="form" label-width="80px" size="small">
+      <el-form ref="form" :model="form" label-width="50px" size="small">
         <el-form-item label="应用">
           <el-checkbox-group v-model="form.apps">
             <el-checkbox label="weChat">微信</el-checkbox>
@@ -88,6 +88,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.el-form {
+  margin-right: 50px;
 }
 .el-select >>> .el-input__inner {
   width: 200px;

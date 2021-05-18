@@ -41,7 +41,7 @@ export default {
     return {
       defaultActive: '',
       talkers: [],
-      defaultAvatarUrl: require('../assets/avatar/people.png')
+      defaultAvatarUrl: require('../assets/avatar/people.png'),
     }
   },
   mounted() {
@@ -83,7 +83,6 @@ main {
   padding: 0px;
   background-color: #ffff;
   border: solid 1px #cccccc;
-  width: calc(100vw - 300px);
 }
 .el-scrollbar >>> .el-scrollbar__wrap {
   overflow-x: hidden;

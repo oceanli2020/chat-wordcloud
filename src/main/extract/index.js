@@ -7,28 +7,23 @@ const extract = {
   extractData: async () => {
     await mkdirp(extractStorage.path)
     extractStorage.apps.forEach((app) => {
-      appMap[app].execExtract()
+      let item
+      switch (app) {
+        case 'weChat':
+          switch (extractStorage.manufacturer) {
+            case 'Xiaomi':
+              item = new WeChatXiaomi()
+          }
+          break
+        case 'qq':
+          switch (extractStorage.manufacturer) {
+            case 'Xiaomi':
+              item = new qqXiaomi()
+          }
+          break
+      }
+      item.execExtract()
     })
-  }
-}
-
-const appMap = {
-  weChat: weChatCreate(),
-  qq: new qqXiaomi()
-}
-const deviceMap = {
-  Xiaomi: qqCreate()
-}
-function weChatCreate() {
-  switch (extractStorage.manufacturer) {
-    case 'xiaomi':
-      return new WeChatXiaomi()
-  }
-}
-function qqCreate() {
-  switch (extractStorage.manufacturer) {
-    case 'xiaomi':
-      return new qqXiaomi()
   }
 }
 

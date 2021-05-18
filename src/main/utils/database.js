@@ -16,7 +16,7 @@ export default class DB {
   static createDb() {
     const dbPath = path.resolve(
       app.getPath('userData'),
-      './data/chat-wordcloud_1/Database.db'
+      './data/chat-wordcloud/Database.db'
     )
     const isDbExist = fs.existsSync(dbPath)
 
