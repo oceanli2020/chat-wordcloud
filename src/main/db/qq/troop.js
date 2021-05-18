@@ -8,3 +8,4 @@ export function save(troop, rtnPrepare) {
 
     const prepare = DB.getInstance().prepare(sql)
     return rtnPrepare ? prepare : prepare.run(troop)
+}

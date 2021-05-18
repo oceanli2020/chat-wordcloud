@@ -16,7 +16,7 @@ export function createTable(tableName) {
     '"msgData" BLOB,' +
     '"time" INTEGER,' +
     '"showMessage" TEXT,' +
-    '"filePath" TEXT,' +
+    '"filePath" TEXT' +
     ');'
 
   const prepare = DB.getInstance().prepare(sql)
