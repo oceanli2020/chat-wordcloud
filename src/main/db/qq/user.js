@@ -12,3 +12,9 @@ export function save(user) {
     .prepare(sql)
     .run(user)
 }
+
+export function getById(user, rtnPrepare) {
+  const sql = 'select * from qqUser where id = @id '
+  const prepare = DB.getInstance().prepare(sql)
+  return rtnPrepare ? prepare : prepare.get(user)
+}

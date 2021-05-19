@@ -1,51 +1,37 @@
 <template>
   <el-container class="word-cloud">
-    <el-aside width="150px" class="aside">
-      <el-radio-group v-model="isCollapse" style="margin-bottom: 20px;">
-        <el-radio-button :label="false">展开</el-radio-button>
-        <el-radio-button :label="true">收起</el-radio-button>
-      </el-radio-group>
+    <el-aside width="200px" class="aside">
       <el-menu
         :default-active="defaultActive"
         @select="selectMenuItem"
         class="menu"
-        :collapse="isCollapse"
       >
         <el-scrollbar
           :style="{
             height: 'calc(100vh - 105px)'
           }"
         >
-          <!-- <el-menu-item
-            :index="item.toString()"
-            v-for="(item, index) in list"
-            :key="index"
+          <el-menu-item
+            :index="friend.uin"
+            v-for="(friend, i) in friends"
+            :key="i"
             style="padding-left: 5px;"
           >
             <template slot="title">
-              <el-avatar :size="32" :src="''" @error="true"
+              <el-avatar :size="32" :src="friend.avatar" @error="true"
                 ><img :src="defaultAvatarUrl"
               /></el-avatar>
-              <span slot="title">{{ item }}</span>
+              <span style="margin-left:5px;">{{
+                friend.conRemark ? friend.conRemark : friend.nickname
+              }}</span>
             </template>
-          </el-menu-item> -->
-          <el-submenu index="1">
-            <template slot="title">
-              <el-avatar :size="32" :src="''" @error="true"
-                ><img :src="defaultAvatarUrl"
-              /></el-avatar>
-            </template>
-            <el-menu-item-group>
-              <span slot="title">分组一</span>
-              <el-menu-item index="1-2">选项2</el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
+          </el-menu-item>
         </el-scrollbar></el-menu
       >
     </el-aside>
-    <!-- <el-main class="main"> -->
-    <!-- <div ref="echartCloud" class="echarts"></div> -->
-    <!-- </el-main> -->
+    <el-main class="main">
+      <div ref="echartCloud" class="echarts"></div>
+    </el-main>
   </el-container>
 </template>
 <script>
@@ -55,43 +41,57 @@ import 'echarts-wordcloud'
 import { createNamespacedHelpers } from 'vuex'
 const { mapState } = createNamespacedHelpers('show')
 export default {
-  name: 'WordCloud',
+  name: 'Wordcloud',
   data() {
     return {
-      list: [1, 2, 3, 4, 5, 6],
+      friends: [],
       myChartCloud: {},
-      wordList: [{ name: '123', value: 2 }],
+      wordList: [],
       defaultAvatarUrl: require('../assets/avatar/people.png'),
-      isCollapse: true,
-      defaultActive: '1'
+      defaultActive: ''
     }
   },
   mounted() {
     this.init()
   },
-  computed: {
-    ...mapState({
-      talker: (state) => state.talker
-    })
-  },
   methods: {
     init() {
-      // this.wordCloud()
       // const params = {
-      //   userId: 1,
-      //   type: 1,
-      //   talker: this.talker
+      //   userId: 2,
+      //   contactsType: 0 //0为好友，3为公众号，2为群聊
       // }
-      // ipcRenderer.once('analysis:weChat:message:reply', (event, result) => {
-      //   this.wordList = []
-      //   this.wordList = result
-      //   this.wordCloud()
-      //   // console.log(result)
-      // })
-      // ipcRenderer.send('analysis:weChat:message', params)
+      const params = {
+        userId: 1,
+        type: 0
+      }
+      ipcRenderer.once('wordcloud:qq:talkers:reply', (event, result) => {
+        this.friends = result
+        if (this.friends.length > 0) {
+          this.$nextTick(() => {
+            this.defaultActive = this.friends[0].uin
+          })
+          this.selectMenuItem(this.friends[0].uin)
+        } else {
+          this.defaultActive = ''
+        }
+      })
+      ipcRenderer.send('wordcloud:qq:talkers', params)
     },
-    selectMenuItem() {},
-    wordCloud() {
+    selectMenuItem(uin) {
+      const params = {
+        userId: 1,
+        friendUin: uin,
+        userUin: 1028771242,
+        type: 0
+      }
+      ipcRenderer.once('wordcloud:qq:reply', (event, result) => {
+        this.wordList = []
+        this.wordList = result
+        this.getWordcloud()
+      })
+      ipcRenderer.send('wordcloud:qq', params)
+    },
+    getWordcloud() {
       let that = this
       let option = {
         title: {
@@ -111,7 +111,7 @@ export default {
           {
             name: '', // 数据提示窗标题
             type: 'wordCloud',
-            gridSize: 15, // 单词之间的间隔大小
+            gridSize: 12, // 单词之间的间隔大小
             drawOutOfBound: false, //设置为true以允许部分在画布外部绘制单词
             sizeRange: [12, 60], // 最小字体和最大字体
             rotationRange: [0, 0], // 字体旋转角度的范围
@@ -169,7 +169,7 @@ export default {
   margin: 10px 10px 0px 10px;
 }
 .aside {
-  margin: 0px 10px 0px 0px;
+  margin: 0px 5px 0px 0px;
 }
 .el-menu {
   border-right: 0 !important;
@@ -178,9 +178,7 @@ export default {
   height: 42px;
   line-height: 42px;
   padding: 0px;
-  padding-left: 0px;
 }
-
 .main {
   padding: 0px;
   text-align: center;
@@ -192,9 +190,5 @@ export default {
 }
 .el-scrollbar >>> .el-scrollbar__wrap {
   overflow-x: hidden;
-}
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 100px;
-  min-height: 400px;
 }
 </style>

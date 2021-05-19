@@ -37,12 +37,12 @@ export default {
       menuRouterMap: {
         '0': '/extractData',
         '1': '/showData',
-        '2': '/wordCloud'
+        '2': '/wordcloud'
       },
       routerMenuMap: {
         '/extractData': '0',
         '/showData': '1',
-        '/wordCloud': '2'
+        '/wordcloud': '2'
       }
     }
   },

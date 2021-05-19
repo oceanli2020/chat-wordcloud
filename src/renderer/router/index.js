@@ -42,9 +42,9 @@ export default new Router({
           component: () => import('../views/ShowData.vue')
         },
         {
-          path: '/wordCloud',
-          name: 'WordCloud',
-          component: () => import('../views/WordCloud.vue')
+          path: '/wordcloud',
+          name: 'Wordcloud',
+          component: () => import('../views/Wordcloud.vue')
         }
       ]
     }
